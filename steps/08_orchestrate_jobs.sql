@@ -45,6 +45,28 @@ EXECUTE TASK ORDERS_UPDATE_TASK;
 -- Step #3: Monitor tasks in Snowsight
 -- ----------------------------------------------------------------------------
 
+-- Alternatively, here are some manual queries to get at the same details
+SHOW TASKS;
+
+--Task execution history in the past day
+SELECT *
+FROM TABLE(INFORMATION_SCHEMA.TASK_HISTORY(
+    SCHEDULED_TIME_RANGE_START=>DATEADD('DAY',-1,CURRENT_TIMESTAMP()),
+    RESULT_LIMIT => 100))
+ORDER BY SCHEDULED_TIME DESC
+;
+
+-- Scheduled task runs
+SELECT
+    TIMESTAMPDIFF(SECOND, CURRENT_TIMESTAMP, SCHEDULED_TIME) NEXT_RUN,
+    SCHEDULED_TIME,
+    NAME,
+    STATE
+FROM TABLE(INFORMATION_SCHEMA.TASK_HISTORY())
+WHERE STATE = 'SCHEDULED'
+ORDER BY COMPLETED_TIME DESC;
+
+
 /*---
 -- TODO: Add Snowsight details here
 -- https://docs.snowflake.com/en/user-guide/ui-snowsight-tasks.html
@@ -54,13 +76,7 @@ EXECUTE TASK ORDERS_UPDATE_TASK;
 -- Alternatively, here are some manual queries to get at the same details
 SHOW TASKS;
 
--- Task execution history in the past day
-SELECT *
-FROM TABLE(INFORMATION_SCHEMA.TASK_HISTORY(
-    SCHEDULED_TIME_RANGE_START=>DATEADD('DAY',-1,CURRENT_TIMESTAMP()),
-    RESULT_LIMIT => 100))
-ORDER BY SCHEDULED_TIME DESC
-;
+
 
 -- Scheduled task runs
 SELECT
